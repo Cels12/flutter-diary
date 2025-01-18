@@ -1,6 +1,6 @@
 # diary_app
 
-A new Flutter project.
+A project that have Create and Read. I Use Supabase for the database
 
 ## Getting Started
 
