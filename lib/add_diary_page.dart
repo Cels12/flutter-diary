@@ -29,11 +29,17 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
           .select();
 
       // Cek jika data berhasil ditambahkan
-      if (response.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Diary added successfully!')),
-        );
-        Navigator.pop(context);
+      if(context.mounted){
+        if (response.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Diary added successfully!')),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to add diary')),
+          );
+        }
       }
     } catch (e) {
       // Tangani error jika ada masalah
