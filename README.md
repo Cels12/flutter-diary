@@ -1,6 +1,6 @@
 # diary_app
 
-A new Flutter project.
+Update ini menambahkan fitur delete ke aplikasi diary.
 
 ## Getting Started
 
