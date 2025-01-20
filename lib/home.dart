@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'add_diary_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:intl/intl.dart';
+import 'edit_diary_page.dart';
 
 class Home extends StatelessWidget {
   Home({super.key});
@@ -47,10 +49,10 @@ class Home extends StatelessWidget {
         if (context.mounted) {
           if (response == null || response.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Diary deleted successfully')));
+                const SnackBar(content: Text('Diary berhasil di hapus')));
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Failed to delete Diary')));
+                const SnackBar(content: Text('Diary gagal di hapus')));
           }
         }
       } catch (e) {
@@ -86,47 +88,98 @@ class Home extends StatelessWidget {
               final diary = diaries[index];
               final title = diary['title'];
               final content = diary['content'];
+              final tanggal_pembuatan = diary['created_at'];
+
+              final formattedDate = DateFormat('dd/MM/yyyy').format(
+                DateTime.parse(tanggal_pembuatan),
+              );
 
               return ListTile(
-                title: Text(title),
-                subtitle: Text(content),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    // Show confirmation dialog before deletion
-                    bool confirmDelete = await showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Confirm Delete'),
-                          content: const Text(
-                              'Are you sure you want to delete this diary?'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: const Text('Cancel'),
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pop(false); // Return false if canceled
-                              },
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      formattedDate,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    )
+                  ],
+                ),
+                subtitle: Text(
+                  content,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                leading: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () async {
+                        final updated = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditDiaryPage(
+                              id: diary['id'],
+                              initialTitle: title,
+                              initialContent: content,
                             ),
-                            TextButton(
-                              child: const Text('Delete'),
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pop(true); // Return true if confirmed
-                              },
-                            ),
-                          ],
+                          ),
                         );
-                      },
-                    );
 
-                    // Proceed with deletion only if confirmed
-                    if (confirmDelete) {
-                      await _deleteDiary(context, diary['id']);
-                    }
-                  },
+                        // Refresh UI if diary is updated
+                        if (updated == true) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Diary updated successfully!')),
+                          );
+                        }
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        bool confirmDelete = await showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Confirm Delete'),
+                              content: const Text(
+                                  'Are you sure you want to delete this diary?'),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: const Text('Cancel'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop(false);
+                                  },
+                                ),
+                                TextButton(
+                                  child: const Text('Delete'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop(true);
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirmDelete) {
+                          await _deleteDiary(context, diary['id']);
+                        }
+                      },
+                    ),
+                  ],
                 ),
               );
             },
