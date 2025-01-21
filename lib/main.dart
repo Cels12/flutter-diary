@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'home.dart';
 
@@ -8,6 +9,11 @@ void main() async{
   await Supabase.initialize(
       url: 'https://yrsfburtuqqaufbilgjg.supabase.co',
       anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlyc2ZidXJ0dXFxYXVmYmlsZ2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwMDA4MjAsImV4cCI6MjA1MjU3NjgyMH0.pA-kM2MZTyXMJimD5P-qtezH6K8Uhpe0rEeaYnp8kQw'
+  );
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent
+    )
   );
   //run app
   runApp(const MyApp());

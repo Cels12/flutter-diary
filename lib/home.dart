@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'add_diary_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-import 'edit_diary_page.dart';
+import 'edit_diary_page.dart  ';
+import 'note_page.dart';
 
 class Home extends StatelessWidget {
   Home({super.key});
@@ -12,23 +13,23 @@ class Home extends StatelessWidget {
 
   //fungsi hapus diary
   Future<void> _deleteDiary(BuildContext context, int id) async {
-    // Show confirmation dialog
+    // Dialog konfirmasi pertama
     bool confirmDelete = await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Konfirmasi'),
-          content: const Text('Apakah kamu yakin ingin menghapus?'),
+          content: const Text('Diary akan dihapus permanen?'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Tidak'),
+              child: const Text('Batal'),
               onPressed: () {
                 Navigator.of(context).pop(false); // Return false jika dibatalkan
               },
             ),
             TextButton(
-              child: const Text('Ya'),
+              child: const Text('Tetap hapus'),
               onPressed: () {
                 Navigator.of(context).pop(true); // Return true jika hapus
               },
@@ -67,8 +68,17 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 34, 40, 49),
       appBar: AppBar(
-        title: const Text('Diary'),
+        scrolledUnderElevation: 0.0,
+        backgroundColor: Color.fromARGB(255, 34, 40, 49),
+        title: Center(
+            child: Text('My Diary',
+              style: TextStyle(
+                color: Color.fromARGB(255, 238, 238, 238),
+              ),
+            ),
+        ),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _diaryStream,
@@ -82,118 +92,168 @@ class Home extends StatelessWidget {
           //loaded
           final diaries = snapshot.data!;
 
+          //Kalo di PHP ini readnya
           return ListView.builder(
             itemCount: diaries.length,
             itemBuilder: (context, index) {
               final diary = diaries[index];
               final title = diary['title'];
               final content = diary['content'];
-              final tanggal_pembuatan = diary['created_at'];
+              final tanggalPembuatan = diary['created_at'];
 
+              //Tampil tanggal, menggunakan package intl
               final formattedDate = DateFormat('dd/MM/yyyy').format(
-                DateTime.parse(tanggal_pembuatan),
+                DateTime.parse(tanggalPembuatan),
               );
-
-              return ListTile(
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 0, 173, 181),
+                        Color.fromARGB(255, 0, 222, 232),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      formattedDate,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black,
+                        blurRadius: 12,
+                        spreadRadius: -12,
+                        offset: Offset(0, 4),
                       ),
-                    )
-                  ],
-                ),
-                subtitle: Text(
-                  content,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                leading: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () async {
-                        final updated = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditDiaryPage(
-                              id: diary['id'],
-                              initialTitle: title,
-                              initialContent: content,
-                            ),
+                    ],
+                  ),
+                  child: ListTile(
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 7),
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 238, 238, 238),
                           ),
-                        );
-
-                        // Refresh UI if diary is updated
-                        if (updated == true) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Diary updated successfully!')),
-                          );
-                        }
-                      },
+                        ),
+                        const SizedBox(height: 7),
+                        Text(
+                          formattedDate,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color.fromARGB(255, 73, 73, 73),
+                          ),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () async {
-                        bool confirmDelete = await showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Confirm Delete'),
-                              content: const Text(
-                                  'Are you sure you want to delete this diary?'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: const Text('Cancel'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop(false);
-                                  },
+                    subtitle: Text(
+                      content,
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 238, 238, 238),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    leading: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, color: Colors.black),
+                          onPressed: () async {
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditDiaryPage(
+                                  id: diary['id'],
+                                  initialTitle: title,
+                                  initialContent: content,
                                 ),
-                                TextButton(
-                                  child: const Text('Delete'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop(true);
-                                  },
-                                ),
-                              ],
+                              ),
                             );
-                          },
-                        );
 
-                        if (confirmDelete) {
-                          await _deleteDiary(context, diary['id']);
-                        }
-                      },
+                            if (updated == true) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Diary updated successfully!')),
+                              );
+                            }
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () async {
+                            bool confirmDelete = await showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Konfirmasi hapus'),
+                                  content: const Text(
+                                      'Apakah kamu yakin ingin menghapus?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('Tidak'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(false);
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('Ya'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(true);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            if (confirmDelete) {
+                              await _deleteDiary(context, diary['id']);
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                  ],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotePage(
+                            title: title,
+                            content: content,
+                            date: formattedDate,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               );
+
+
             },
           );
         },
       ),
+
+      //button add diary
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Color.fromARGB(255, 67, 73, 82),
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddDiaryPage()),
           );
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add,
+          color: Color.fromARGB(255, 0, 173, 181),
+          size: 40,
+
+        ),
       ),
     );
   }
