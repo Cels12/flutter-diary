@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddDiaryPage extends StatefulWidget {
   const AddDiaryPage({super.key});
@@ -9,48 +12,94 @@ class AddDiaryPage extends StatefulWidget {
 }
 
 class _AddDiaryPageState extends State<AddDiaryPage> {
+  File? _imageFile;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
 
-  Future<void> _addDiary() async {
+  //pick image
+  Future pickImage() async {
+    //picker
+    final ImagePicker picker = ImagePicker();
+
+    //pick from gallery
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    //update image preview
+    if (image != null) {
+      setState(() {
+        _imageFile = File(image.path);
+      });
+    }
+  }
+
+  //upload
+  Future<String?> uploadImage() async {
+    if (_imageFile == null) return null;
+
+    final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    final path = 'uploads/$fileName';
+
+    try {
+      await Supabase.instance.client.storage.from('images').upload(path, _imageFile!);
+      return path; // Return the uploaded image path
+    } catch (e) {
+      // Handle errors during upload
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Image upload failed: ${e.toString()}')),
+      );
+      return null;
+    }
+  }
+
+
+  Future<void> _addDiary(String? imagePath) async {
     final title = _titleController.text;
     final content = _contentController.text;
 
     if (title.isEmpty || content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Title and Content cannot be empty')),
+        const SnackBar(content: Text('Title and Content cannot be empty')),
       );
       return;
     }
 
     try {
-      // Kirim data ke Supabase
+      // Insert diary data into Supabase
       final response = await Supabase.instance.client
           .from('diaries')
-          .insert({'title': title, 'content': content})
+          .insert({
+        'title': title,
+        'content': content,
+        'image_path': imagePath, // Save image path if available
+      })
           .select();
 
-      // Cek jika data berhasil ditambahkan
-      if(context.mounted){
+      // Feedback to user
+      if (context.mounted) {
         if (response.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Diary added successfully!')),
+            const SnackBar(content: Text('Diary added successfully!')),
           );
           Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to add diary')),
+            const SnackBar(content: Text('Failed to add diary')),
           );
         }
       }
     } catch (e) {
-      // Tangani error jika ada masalah
+      // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
       );
     }
   }
 
+
+  Future<void> _saveDiary() async {
+    final imagePath = await uploadImage();
+    await _addDiary(imagePath);
+  }
 
 
   @override
@@ -61,6 +110,24 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Show selected image with size constraints
+            _imageFile != null
+                ? Container(
+              constraints: BoxConstraints(
+                maxHeight: 100, // Set a max height for the image
+                maxWidth: double.infinity, // Allow it to take the full width
+              ),
+              child: Image.file(
+                _imageFile!,
+                fit: BoxFit.cover, // Ensure the image scales properly within the box
+              ),
+            )
+                : const Text('No image selected...'),
+            ElevatedButton(
+                onPressed: pickImage,
+                child: const Text('Pick Image')
+            ),
+            SizedBox(height: 16),
             TextField(
               controller: _titleController,
               decoration: InputDecoration(labelText: 'Title'),
@@ -72,8 +139,9 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
               maxLines: 5,
             ),
             SizedBox(height: 16),
+            //button save diary
             ElevatedButton(
-              onPressed: _addDiary,
+              onPressed: _saveDiary,
               child: Text('Save'),
             ),
           ],

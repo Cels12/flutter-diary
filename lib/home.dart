@@ -216,9 +216,24 @@ class Home extends StatelessWidget {
                             }
                           },
                         ),
+                        diary['image_path'] != null
+                            ? Image.network(
+                            Supabase.instance.client.storage
+                              .from('images')
+                                .getPublicUrl(diary['image_path']),
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        )
+                            :const Icon(Icons.image, size: 50),
                       ],
                     ),
                     onTap: () {
+                      final imagePath = diary['image_path'] ?? '';
+                      final imageUrl = imagePath.isNotEmpty
+                          ? Supabase.instance.client.storage.from('images').getPublicUrl(imagePath)
+                          : ''; // Ensure fallback to an empty string if imagePath is empty.
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -226,6 +241,7 @@ class Home extends StatelessWidget {
                             title: title,
                             content: content,
                             date: formattedDate,
+                            imageUrl: imageUrl,
                           ),
                         ),
                       );
