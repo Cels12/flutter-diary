@@ -2,36 +2,34 @@ import 'package:flutter/material.dart';
 import 'add_diary_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-import 'edit_diary_page.dart  ';
+import 'edit_diary_page.dart';
 import 'note_page.dart';
 
 class Home extends StatelessWidget {
   Home({super.key});
 
-  final _diaryStream =
-  Supabase.instance.client.from('diaries').stream(primaryKey: ['id']);
+  final _diaryStream = Supabase.instance.client.from('diaries').stream(primaryKey: ['id']);
 
-  //fungsi hapus diary
+  // Function to delete a diary entry
   Future<void> _deleteDiary(BuildContext context, int id) async {
-    // Dialog konfirmasi pertama
     bool confirmDelete = await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Konfirmasi'),
-          content: const Text('Diary akan dihapus permanen?'),
+          title: const Text('Confirmation'),
+          content: const Text('Do you want to delete this diary permanently?'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Batal'),
+              child: const Text('Cancel'),
               onPressed: () {
-                Navigator.of(context).pop(false); // Return false jika dibatalkan
+                Navigator.of(context).pop(false);
               },
             ),
             TextButton(
-              child: const Text('Tetap hapus'),
+              child: const Text('Delete'),
               onPressed: () {
-                Navigator.of(context).pop(true); // Return true jika hapus
+                Navigator.of(context).pop(true);
               },
             ),
           ],
@@ -39,7 +37,6 @@ class Home extends StatelessWidget {
       },
     );
 
-    // jika delete di eksekusi
     if (confirmDelete) {
       try {
         final response = await Supabase.instance.client
@@ -50,10 +47,10 @@ class Home extends StatelessWidget {
         if (context.mounted) {
           if (response == null || response.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Diary berhasil di hapus')));
+                const SnackBar(content: Text('Diary deleted successfully')));
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Diary gagal di hapus')));
+                const SnackBar(content: Text('Failed to delete diary')));
           }
         }
       } catch (e) {
@@ -68,31 +65,31 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 34, 40, 49),
+      backgroundColor: const Color.fromARGB(255, 34, 40, 49),
       appBar: AppBar(
         scrolledUnderElevation: 0.0,
-        backgroundColor: Color.fromARGB(255, 34, 40, 49),
+        backgroundColor: const Color.fromARGB(255, 34, 40, 49),
         title: Center(
-            child: Text('My Diary',
-              style: TextStyle(
-                color: Color.fromARGB(255, 238, 238, 238),
-              ),
+          child: Text(
+            'My Diary',
+            style: TextStyle(
+              color: const Color.fromARGB(255, 238, 238, 238),
             ),
+          ),
         ),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _diaryStream,
         builder: (context, snapshot) {
-          //loading...
           if (!snapshot.hasData) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
-          //loaded
-          final diaries = snapshot.data!;
 
-          //Kalo di PHP ini readnya
+          final diaries = snapshot.data!;
+          final baseUrl = 'https://yrsfburtuqqaufbilgjg.supabase.co/storage/v1/object/public/images/';
+
           return ListView.builder(
             itemCount: diaries.length,
             itemBuilder: (context, index) {
@@ -100,11 +97,15 @@ class Home extends StatelessWidget {
               final title = diary['title'];
               final content = diary['content'];
               final tanggalPembuatan = diary['created_at'];
+              final imagePath = diary['image_path'] ?? '';
 
-              //Tampil tanggal, menggunakan package intl
               final formattedDate = DateFormat('dd/MM/yyyy').format(
                 DateTime.parse(tanggalPembuatan),
               );
+
+              final fullImagePath =
+              imagePath.isNotEmpty ? '$baseUrl$imagePath' : '';
+
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Container(
@@ -112,8 +113,8 @@ class Home extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10.0),
                     gradient: LinearGradient(
                       colors: [
-                        Color.fromARGB(255, 0, 173, 181),
-                        Color.fromARGB(255, 0, 222, 232),
+                        const Color.fromARGB(255, 0, 173, 181),
+                        const Color.fromARGB(255, 0, 222, 232),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -123,7 +124,7 @@ class Home extends StatelessWidget {
                         color: Colors.black,
                         blurRadius: 12,
                         spreadRadius: -12,
-                        offset: Offset(0, 4),
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
@@ -171,6 +172,7 @@ class Home extends StatelessWidget {
                                   id: diary['id'],
                                   initialTitle: title,
                                   initialContent: content,
+                                  initialImagePath: imagePath,
                                 ),
                               ),
                             );
@@ -190,18 +192,18 @@ class Home extends StatelessWidget {
                               barrierDismissible: false,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text('Konfirmasi hapus'),
+                                  title: const Text('Confirm delete'),
                                   content: const Text(
-                                      'Apakah kamu yakin ingin menghapus?'),
+                                      'Are you sure you want to delete this?'),
                                   actions: <Widget>[
                                     TextButton(
-                                      child: const Text('Tidak'),
+                                      child: const Text('No'),
                                       onPressed: () {
                                         Navigator.of(context).pop(false);
                                       },
                                     ),
                                     TextButton(
-                                      child: const Text('Ya'),
+                                      child: const Text('Yes'),
                                       onPressed: () {
                                         Navigator.of(context).pop(true);
                                       },
@@ -216,24 +218,17 @@ class Home extends StatelessWidget {
                             }
                           },
                         ),
-                        diary['image_path'] != null
+                        imagePath.isNotEmpty
                             ? Image.network(
-                            Supabase.instance.client.storage
-                              .from('images')
-                                .getPublicUrl(diary['image_path']),
+                          fullImagePath,
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
                         )
-                            :const Icon(Icons.image, size: 50),
+                            : const Icon(Icons.image, size: 50),
                       ],
                     ),
                     onTap: () {
-                      final imagePath = diary['image_path'] ?? '';
-                      final imageUrl = imagePath.isNotEmpty
-                          ? Supabase.instance.client.storage.from('images').getPublicUrl(imagePath)
-                          : ''; // Ensure fallback to an empty string if imagePath is empty.
-
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -241,7 +236,7 @@ class Home extends StatelessWidget {
                             title: title,
                             content: content,
                             date: formattedDate,
-                            imageUrl: imageUrl,
+                            imageUrl: fullImagePath,
                           ),
                         ),
                       );
@@ -249,26 +244,22 @@ class Home extends StatelessWidget {
                   ),
                 ),
               );
-
-
             },
           );
         },
       ),
-
-      //button add diary
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Color.fromARGB(255, 67, 73, 82),
+        backgroundColor: const Color.fromARGB(255, 67, 73, 82),
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddDiaryPage()),
           );
         },
-        child: const Icon(Icons.add,
+        child: const Icon(
+          Icons.add,
           color: Color.fromARGB(255, 0, 173, 181),
           size: 40,
-
         ),
       ),
     );
