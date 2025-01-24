@@ -31,14 +31,20 @@ class NotePage extends StatelessWidget {
             fontSize: 30
           ),
         ),
+
+        //ini buat appbar color
         backgroundColor: const Color.fromARGB(255, 34, 40, 49),
+
       ),
+
+      //background color untuk keseluruhan appnya
       backgroundColor: const Color.fromARGB(255, 34, 40, 49),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             // Title
             Text(
               title,
