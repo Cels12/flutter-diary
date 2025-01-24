@@ -163,6 +163,7 @@ class Home extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
+                          tooltip: 'Edit',
                           icon: const Icon(Icons.edit_outlined, color: Colors.black),
                           onPressed: () async {
                             final updated = await Navigator.push(
@@ -185,6 +186,7 @@ class Home extends StatelessWidget {
                           },
                         ),
                         IconButton(
+                          tooltip: 'Delete',
                           icon: const Icon(Icons.delete_outline, color: Colors.red),
                           onPressed: () async {
                             bool confirmDelete = await showDialog(

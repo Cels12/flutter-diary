@@ -11,64 +11,109 @@ class NotePage extends StatelessWidget {
     required this.title,
     required this.content,
     required this.date,
-    required this.imageUrl, // Added imageUrl as a required parameter
+    required this.imageUrl,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Diary'),
+        leading: IconButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+          icon: Icon(Icons.arrow_back, color: Color.fromARGB(238, 238, 238, 238)
+            ),
+        ),
+        title: const Text(
+          'Diary',
+          style: TextStyle(color: Color.fromARGB(255, 238, 238, 238),
+            fontSize: 30
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 34, 40, 49),
       ),
+      backgroundColor: const Color.fromARGB(255, 34, 40, 49),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title
             Text(
               title,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 238, 238, 238),
               ),
             ),
             const SizedBox(height: 8),
+
+            // Date
             Text(
               date,
               style: const TextStyle(
                 fontSize: 12,
+                color: Color.fromARGB(255, 149, 149, 149),
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              content,
-              style: const TextStyle(
-                fontSize: 16,
+
+            // Boxed Content with Image
+            Container(
+              height: 650,
+              width: 570,
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color.fromARGB(255, 3, 173, 181),
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Content Text
+                  Text(
+                    content,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color.fromARGB(255, 238, 238, 238),
+                    ),
+                    maxLines: 6, // Limit text to 6 lines
+                    overflow: TextOverflow.ellipsis, // Add ellipses for overflow
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Image (if URL is provided)
+                  if (imageUrl.isNotEmpty)
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: 150, // max height
+                        maxWidth: double.infinity, // Full width
+                      ),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Text(
+                            'Failed to load image',
+                            style: TextStyle(color: Colors.red),
+                          );
+                        },
+                      ),
+                    ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            // Display the image if the URL is not empty
-            imageUrl.isNotEmpty
-                ? Container(
-              constraints: BoxConstraints(
-                maxHeight: 300, // Limit the image height
-                maxWidth: double.infinity,
-              ),
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover, // Ensure the image fits properly
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return const Text('Failed to load image');
-                },
-              ),
-            )
-                : const Text('No image available'),
           ],
         ),
       ),

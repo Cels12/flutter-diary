@@ -119,28 +119,27 @@ class _EditDiaryPageState extends State<EditDiaryPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
-            ),
-            TextField(
-              controller: _contentController,
-              decoration: const InputDecoration(labelText: 'Content'),
-            ),
-            const SizedBox(height: 16),
             _imageFile != null
-                ? Image.file(
-              _imageFile!,
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
+                ? Container(
+              constraints: BoxConstraints(
+                maxHeight: 200, // max height
+                maxWidth: double.infinity, // Full width
+              ),
+              child: Image.file(
+                _imageFile!,
+                fit: BoxFit.cover,
+              ),
             )
                 : (_imagePath != null
-                ? Image.network(
-              _imagePath!,
-              height: 100,
-              width: double.infinity,
-              fit: BoxFit.cover,
+                ? Container(
+              constraints: BoxConstraints(
+                maxHeight: 100, // max height
+                maxWidth: double.infinity, // Full width
+              ),
+              child: Image.network(
+                _imagePath!,
+                fit: BoxFit.cover,
+              ),
             )
                 : const Text('No image selected')),
             const SizedBox(height: 16),
@@ -149,6 +148,14 @@ class _EditDiaryPageState extends State<EditDiaryPage> {
               child: const Text('Pick Image'),
             ),
             const SizedBox(height: 16),
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            TextField(
+              controller: _contentController,
+              decoration: const InputDecoration(labelText: 'Content'),
+            ),
             ElevatedButton(
               onPressed: _updateDiary,
               child: const Text('Update'),

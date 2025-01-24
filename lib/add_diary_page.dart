@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AddDiaryPage extends StatefulWidget {
@@ -114,12 +113,12 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
             _imageFile != null
                 ? Container(
               constraints: BoxConstraints(
-                maxHeight: 100, // Set a max height for the image
-                maxWidth: double.infinity, // Allow it to take the full width
+                maxHeight: 100, // max height
+                maxWidth: double.infinity, // Full width
               ),
               child: Image.file(
                 _imageFile!,
-                fit: BoxFit.cover, // Ensure the image scales properly within the box
+                fit: BoxFit.cover,
               ),
             )
                 : const Text('No image selected...'),
