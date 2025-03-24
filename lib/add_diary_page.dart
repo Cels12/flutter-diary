@@ -127,6 +127,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                 onPressed: pickImage,
                 child: const Text('Pick Image')
             ),
+
             SizedBox(height: 16),
             TextField(
               controller: _titleController,
@@ -144,6 +145,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
               onPressed: _saveDiary,
               child: Text('Save'),
             ),
+
           ],
         ),
       ),
